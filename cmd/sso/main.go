@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	app "sso/internal/app"
 	"sso/internal/config"
 )
 
@@ -20,13 +21,16 @@ func main() {
 	fmt.Println(cfg)
 
 	//инициализировать логгер
-
 	log := setupLogger(cfg.Env)
 
+	//иметь ввиду, чтобы не выводить сесурные данные
 	log.Info("starting application", slog.Any("cfg", cfg))
 
-	//TODO: инициализировать приложение (app)
+	//TODO: инициализировать приложение
 
+	application := app.New(log, cfg.GRPC.Port, cfg.StoragePath, cfg.TokenTTL)
+
+	application.GRPCServer.MustRun()
 	//TODO: запустить gRPC-сервер приложения
 }
 
