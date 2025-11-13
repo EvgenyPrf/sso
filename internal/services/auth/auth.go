@@ -38,6 +38,8 @@ type AppProvider interface {
 
 var (
 	ErrInvalidCredentials = errors.New("invalid credentials")
+	ErrInvalidUserId      = errors.New("invalid user id")
+	ErrUserExists         = errors.New("user exists")
 )
 
 func New(
@@ -66,6 +68,11 @@ func (auth *Auth) Login(
 	if err != nil {
 		if errors.Is(err, storage.ErrUserNotFound) {
 			auth.log.Warn("user not found", err)
+			return "", fmt.Errorf("%s: %w", op, ErrInvalidCredentials)
+		}
+
+		if errors.Is(err, storage.ErrAppNotFound) {
+			auth.log.Warn("app not found", err)
 			return "", fmt.Errorf("%s: %w", op, ErrInvalidCredentials)
 		}
 
@@ -119,6 +126,10 @@ func (auth *Auth) RegisterNewUser(
 	id, err := auth.userSaver.SaveUser(ctx, email, passHash)
 
 	if err != nil {
+		if errors.Is(err, storage.ErrUserExists) {
+			auth.log.Warn("user already exists", err)
+			return 0, fmt.Errorf("%s: %w", op, ErrUserExists)
+		}
 		log.Error("failed to save user", err)
 		return 0, fmt.Errorf("%s: %w", op, err)
 	}
@@ -145,6 +156,10 @@ func (auth *Auth) IsAdmin(
 	isAdmin, err := auth.IsAdmin(ctx, userId)
 
 	if err != nil {
+		if errors.Is(err, storage.ErrUserNotFound) {
+			auth.log.Warn("user not found", err)
+			return false, fmt.Errorf("%s: %w", op, ErrInvalidUserId)
+		}
 		return false, fmt.Errorf("%s: %w", op, err)
 	}
 
