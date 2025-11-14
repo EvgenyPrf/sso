@@ -3,6 +3,7 @@ package config
 import (
 	"flag"
 	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/joho/godotenv"
 	"os"
 	"time"
 )
@@ -20,23 +21,14 @@ type GRPCConfig struct {
 }
 
 func MustLoad() *Config {
+	_ = godotenv.Load()
+
 	path := fetchConfigPath()
 
 	if path == "" {
 		panic("config path is empty!")
 	}
-
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		panic("config file does not exist: " + path)
-	}
-
-	var config Config
-
-	if err := cleanenv.ReadConfig(path, &config); err != nil {
-		panic("failed to read config " + err.Error())
-	}
-
-	return &config
+	return MustLoadByPath(path)
 }
 
 // получение информации о пути файла конфига из двух возможных источников: либо из переменных окружения, либо из флага
@@ -55,4 +47,18 @@ func fetchConfigPath() string {
 	}
 
 	return res
+}
+
+func MustLoadByPath(configPath string) *Config {
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		panic("config file does not exists: " + configPath)
+	}
+
+	var cfg Config
+
+	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
+		panic("cannot read config: " + err.Error())
+	}
+
+	return &cfg
 }

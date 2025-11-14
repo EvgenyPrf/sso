@@ -28,11 +28,10 @@ func main() {
 	//иметь ввиду, чтобы не выводить сесурные данные
 	log.Info("starting application", slog.Any("cfg", cfg))
 
-	//TODO: инициализировать приложение
-
+	//инициализировать приложение
 	application := app.New(log, cfg.GRPC.Port, cfg.StoragePath, cfg.TokenTTL)
 
-	//TODO: запустить gRPC-сервер приложения
+	//запустить gRPC-сервер приложения
 	go application.GRPCServer.MustRun()
 
 	//Graceful shutdown
