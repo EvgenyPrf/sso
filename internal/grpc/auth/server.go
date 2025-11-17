@@ -1,16 +1,14 @@
 package auth
 
 import (
+	"buf.build/go/protovalidate"
 	"context"
 	"errors"
-	"sso/internal/services/auth"
-	"sso/internal/storage"
-
-	"buf.build/go/protovalidate"
 	ssov1 "github.com/EvgenyPrf/protos/gen/go/sso"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"sso/internal/services/auth"
 )
 
 type Auth interface {
@@ -87,7 +85,7 @@ func (s *serverAPI) IsAdmin(ctx context.Context, req *ssov1.IsAdminRequest) (*ss
 	res, err := s.auth.IsAdmin(ctx, req.GetUserId())
 
 	if err != nil {
-		if errors.Is(err, storage.ErrUserNotFound) {
+		if errors.Is(err, auth.ErrUserNotFound) {
 			return nil, status.Errorf(codes.NotFound, "User not found")
 		}
 		return nil, status.Errorf(codes.Internal, "Internal server error")
